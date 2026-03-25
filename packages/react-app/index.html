@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日历天气 - React 版本</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #f5f7fa;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+    .dark {
+      background: #1a1a2e;
+      color: #e8e8e8;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #4A6FA5;
+    }
+    .dark h1 {
+      color: #6db3a3;
+    }
+    .calendar {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .dark .calendar {
+      background: #16213e;
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .calendar-header button {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background: #4A6FA5;
+      color: white;
+      cursor: pointer;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .calendar-weekday {
+      text-align: center;
+      font-weight: bold;
+      padding: 10px;
+      color: #666;
+    }
+    .dark .calendar-weekday {
+      color: #a8a8a8;
+    }
+    .calendar-day {
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .calendar-day:hover {
+      background: #e3f2fd;
+    }
+    .calendar-day.selected {
+      background: #4A6FA5;
+      color: white;
+    }
+    .calendar-day.other-month {
+      color: #ccc;
+    }
+    .weather-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .dark .weather-card {
+      background: #16213e;
+    }
+    .weather-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .city-select {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: white;
+    }
+    .dark .city-select {
+      background: #16213e;
+      border-color: #444;
+      color: white;
+    }
+    .temp-main {
+      font-size: 48px;
+      font-weight: bold;
+      color: #4A6FA5;
+    }
+    .dark .temp-main {
+      color: #6db3a3;
+    }
+    .weather-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .info-item {
+      text-align: center;
+      padding: 12px;
+      background: #f5f7fa;
+      border-radius: 8px;
+    }
+    .dark .info-item {
+      background: #0f3460;
+    }
+    .toggle-theme {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: #4A6FA5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .back-home {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function App() {
+      const [isDark, setIsDark] = React.useState(false);
+      const [currentDate, setCurrentDate] = useState(new Date());
+      const [selectedDate, setSelectedDate] = useState(new Date());
+      const [selectedCity, setSelectedCity] = useState('北京');
+      
+      const cities = [
+        { name: '北京', lat: 39.9042, lon: 116.4074 },
+        { name: '上海', lat: 31.2304, lon: 121.4737 },
+        { name: '广州', lat: 23.1291, lon: 113.2644 },
+        { name: '深圳', lat: 22.5431, lon: 114.0579 }
+      ];
+      
+      const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+      
+      const [weather, setWeather] = useState({
+        temperature: 22.5,
+        description: '晴朗',
+        humidity: 65,
+        windSpeed: 3.5,
+        pressure: 1013
+      });
+
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth();
+
+      const getCalendarDays = () => {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDayOfWeek = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+        
+        const days = [];
+        
+        for (let i = 0; i < startDayOfWeek; i++) {
+          days.push({ date: '', otherMonth: true });
+        }
+        
+        for (let i = 1; i <= daysInMonth; i++) {
+          const isSelected = 
+            i === selectedDate.getDate() && 
+            month === selectedDate.getMonth() && 
+            year === selectedDate.getFullYear();
+          days.push({ date: i, otherMonth: false, selected: isSelected });
+        }
+        
+        return days;
+      };
+
+      const prevMonth = () => {
+        setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+      };
+
+      const nextMonth = () => {
+        setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+      };
+
+      const selectDay = (day) => {
+        if (!day.otherMonth && day.date) {
+          setSelectedDate(new Date(currentYear, currentMonth, day.date));
+          setCurrentDate(new Date(currentYear, currentMonth, 1));
+        }
+      };
+
+      const changeCity = (cityName) => {
+        setSelectedCity(cityName);
+        setWeather({
+          ...weather,
+          temperature: Math.round((15 + Math.random() * 15) * 10) / 10,
+          humidity: 50 + Math.floor(Math.random() * 40),
+        });
+      };
+
+      const toggleTheme = () => {
+        setIsDark(!isDark);
+      };
+
+      useEffect(() => {
+        if (isDark) {
+          document.body.classList.add('dark');
+        } else {
+          document.body.classList.remove('dark');
+        }
+      }, [isDark]);
+
+      const currentCity = cities.find(c => c.name === selectedCity) || cities[0];
+
+      return (
+        <div>
+          <a href="/" className="back-home">🏠 返回首页</a>
+          <button className="toggle-theme" onClick={toggleTheme}>
+            {isDark ? '☀️ 浅色' : '🌙 深色'}
+          </button>
+          <div className="container">
+            <h1>📅 日历天气 (React 18)</h1>
+            
+            <div className="calendar">
+              <div className="calendar-header">
+                <button onClick={prevMonth}>&lt;</button>
+                <h3>{currentYear}年 {currentMonth + 1}月</h3>
+                <button onClick={nextMonth}>&gt;</button>
+              </div>
+              <div className="calendar-grid">
+                {weekdays.map(day => (
+                  <div key={day} className="calendar-weekday">{day}</div>
+                ))}
+                {getCalendarDays().map((day, index) => (
+                  <div 
+                    key={index}
+                    className={`calendar-day ${day.selected ? 'selected' : ''} ${day.otherMonth ? 'other-month' : ''}`}
+                    onClick={() => selectDay(day)}
+                  >
+                    {day.date}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="weather-card">
+              <div className="weather-header">
+                <h2>{currentCity.name}</h2>
+                <select 
+                  value={selectedCity} 
+                  className="city-select" 
+                  onChange={(e) => changeCity(e.target.value)}
+                >
+                  {cities.map(city => (
+                    <option key={city.name} value={city.name}>{city.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="temp-main">{weather.temperature}°C</div>
+              <p>{weather.description}</p>
+              <div className="weather-info">
+                <div className="info-item">
+                  <div>湿度</div>
+                  <strong>{weather.humidity}%</strong>
+                </div>
+                <div className="info-item">
+                  <div>风速</div>
+                  <strong>{weather.windSpeed} m/s</strong>
+                </div>
+                <div className="info-item">
+                  <div>气压</div>
+                  <strong>{weather.pressure} hPa</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

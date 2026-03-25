@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日历天气 - Angular 版本</title>
+  <script src="https://unpkg.com/@angular/core@17/bundles/core.umd.js"></script>
+  <script src="https://unpkg.com/@angular/common@17/bundles/common.umd.js"></script>
+  <script src="https://unpkg.com/@angular/platform-browser@17/bundles/platform-browser.umd.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #f5f7fa;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+    .dark {
+      background: #1a1a2e;
+      color: #e8e8e8;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #4A6FA5;
+    }
+    .dark h1 {
+      color: #6db3a3;
+    }
+    .calendar {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .dark .calendar {
+      background: #16213e;
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .calendar-header button {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background: #4A6FA5;
+      color: white;
+      cursor: pointer;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .calendar-weekday {
+      text-align: center;
+      font-weight: bold;
+      padding: 10px;
+      color: #666;
+    }
+    .dark .calendar-weekday {
+      color: #a8a8a8;
+    }
+    .calendar-day {
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .calendar-day:hover {
+      background: #e3f2fd;
+    }
+    .calendar-day.selected {
+      background: #4A6FA5;
+      color: white;
+    }
+    .calendar-day.other-month {
+      color: #ccc;
+    }
+    .weather-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .dark .weather-card {
+      background: #16213e;
+    }
+    .weather-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .city-select {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: white;
+    }
+    .dark .city-select {
+      background: #16213e;
+      border-color: #444;
+      color: white;
+    }
+    .temp-main {
+      font-size: 48px;
+      font-weight: bold;
+      color: #4A6FA5;
+    }
+    .dark .temp-main {
+      color: #6db3a3;
+    }
+    .weather-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .info-item {
+      text-align: center;
+      padding: 12px;
+      background: #f5f7fa;
+      border-radius: 8px;
+    }
+    .dark .info-item {
+      background: #0f3460;
+    }
+    .toggle-theme {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: #4A6FA5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .back-home {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <app-root></app-root>
+
+  <script>
+    const { Component, NgModule } = ng.core;
+    const { BrowserModule } = ng.platformBrowser;
+
+    const cities = [
+      { name: '北京', lat: 39.9042, lon: 116.4074 },
+      { name: '上海', lat: 31.2304, lon: 121.4737 },
+      { name: '广州', lat: 23.1291, lon: 113.2644 },
+      { name: '深圳', lat: 22.5431, lon: 114.0579 }
+    ];
+
+    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+
+    @Component({
+      selector: 'app-root',
+      template: `
+        <a href="/" class="back-home">🏠 返回首页</a>
+        <button class="toggle-theme" (click)="toggleTheme()">
+          {{ isDark ? '☀️ 浅色' : '🌙 深色' }}
+        </button>
+        <div class="container">
+          <h1>📅 日历天气 (Angular 17)</h1>
+          
+          <div class="calendar">
+            <div class="calendar-header">
+              <button (click)="prevMonth()">&lt;</button>
+              <h3>{{ currentYear }}年 {{ currentMonth + 1 }}月</h3>
+              <button (click)="nextMonth()">&gt;</button>
+            </div>
+            <div class="calendar-grid">
+              <div class="calendar-weekday" *ngFor="let day of weekdays">{{ day }}</div>
+              <div 
+                *ngFor="let day of getCalendarDays(); let i = index"
+                class="calendar-day"
+                [class.selected]="day.selected"
+                [class.other-month]="day.otherMonth"
+                (click)="selectDay(day)"
+              >
+                {{ day.date }}
+              </div>
+            </div>
+          </div>
+
+          <div class="weather-card">
+            <div class="weather-header">
+              <h2>{{ currentCity.name }}</h2>
+              <select [(ngModel)]="selectedCity" (change)="changeCity()" class="city-select">
+                <option *ngFor="let city of cities" [value]="city.name">
+                  {{ city.name }}
+                </option>
+              </select>
+            </div>
+            <div class="temp-main">{{ weather.temperature }}°C</div>
+            <p>{{ weather.description }}</p>
+            <div class="weather-info">
+              <div class="info-item">
+                <div>湿度</div>
+                <strong>{{ weather.humidity }}%</strong>
+              </div>
+              <div class="info-item">
+                <div>风速</div>
+                <strong>{{ weather.windSpeed }} m/s</strong>
+              </div>
+              <div class="info-item">
+                <div>气压</div>
+                <strong>{{ weather.pressure }} hPa</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+    })
+    class AppComponent {
+      isDark = false;
+      currentDate = new Date();
+      selectedDate = new Date();
+      selectedCity = '北京';
+      cities = cities;
+      weekdays = weekdays;
+      weather = {
+        temperature: 22.5,
+        description: '晴朗',
+        humidity: 65,
+        windSpeed: 3.5,
+        pressure: 1013
+      };
+
+      get currentYear() {
+        return this.currentDate.getFullYear();
+      }
+
+      get currentMonth() {
+        return this.currentDate.getMonth();
+      }
+
+      get currentCity() {
+        return this.cities.find(c => c.name === this.selectedCity) || this.cities[0];
+      }
+
+      getCalendarDays() {
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+        
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDayOfWeek = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+        
+        const days = [];
+        
+        for (let i = 0; i < startDayOfWeek; i++) {
+          days.push({ date: '', otherMonth: true, selected: false });
+        }
+        
+        for (let i = 1; i <= daysInMonth; i++) {
+          const isSelected = 
+            i === this.selectedDate.getDate() && 
+            month === this.selectedDate.getMonth() && 
+            year === this.selectedDate.getFullYear();
+          days.push({ 
+            date: i, 
+            otherMonth: false, 
+            selected: isSelected 
+          });
+        }
+        
+        return days;
+      }
+
+      prevMonth() {
+        this.currentDate = new Date(this.currentYear, this.currentMonth - 1, 1);
+      }
+
+      nextMonth() {
+        this.currentDate = new Date(this.currentYear, this.currentMonth + 1, 1);
+      }
+
+      selectDay(day) {
+        if (!day.otherMonth && day.date) {
+          this.selectedDate = new Date(this.currentYear, this.currentMonth, day.date);
+          this.currentDate = new Date(this.currentYear, this.currentMonth, 1);
+        }
+      }
+
+      changeCity() {
+        this.weather = {
+          ...this.weather,
+          temperature: Math.round((15 + Math.random() * 15) * 10) / 10,
+          humidity: 50 + Math.floor(Math.random() * 40),
+        };
+      }
+
+      toggleTheme() {
+        this.isDark = !this.isDark;
+        if (this.isDark) {
+          document.body.classList.add('dark');
+        } else {
+          document.body.classList.remove('dark');
+        }
+      }
+    }
+
+    @NgModule({
+      imports: [BrowserModule, ng.common.CommonModule],
+      declarations: [AppComponent],
+      bootstrap: [AppComponent]
+    })
+    class AppModule { }
+
+    const platform = ng.platformBrowser.platformBrowserDynamic();
+    platform.bootstrapModule(AppModule);
+  </script>
+</body>
+</html>

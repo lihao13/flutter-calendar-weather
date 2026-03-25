@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PHP 后端 API - 屎山日历天气</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f7fa;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-link">🏠 返回首页</a>
+  <h1>🐘 PHP 后端 API</h1>
+  <div class="card">
+    <h2>API 端点</h2>
+    <p>获取天气数据：</p>
+    <code>/api/weather.php?city=城市名</code>
+    <p>示例：</p>
+    <a href="/api/weather.php?city=北京" class="btn">查看北京天气</a>
+  </div>
+
+  <div class="card">
+    <h2>响应示例</h2>
+<pre>{
+  "success": true,
+  "data": {
+    "city": {
+      "name": "北京",
+      "lat": 39.9042,
+      "lon": 116.4074
+    },
+    "weather": {
+      "temperature": 22.5,
+      "humidity": 65,
+      "description": "晴朗"
+    },
+    "hourly": [
+      {
+        "time": "2026-03-25T10:00:00+08:00",
+        "temperature": 22.5
+      }
+    ]
+  }
+}
+</pre>
+  </div>
+
+  <div class="card">
+    <h2>支持的城市</h2>
+    <ul>
+      <li>北京</li>
+      <li>上海</li>
+      <li>广州</li>
+      <li>深圳</li>
+      <li>杭州</li>
+      <li>成都</li>
+    </ul>
+  </div>
+</body>
+</html>
