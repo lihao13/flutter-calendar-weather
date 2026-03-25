@@ -1,0 +1,28 @@
+name: flutter_calendar_weather
+description: Flutter日历天气应用
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  table_calendar: ^3.1.0
+  provider: ^6.1.1
+  dio: ^5.4.0
+  shared_preferences: ^2.2.2
+  intl: ^0.18.1
+  font_awesome_flutter: ^10.6.0
+  shimmer: ^3.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
