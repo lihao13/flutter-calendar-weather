@@ -1,0 +1,19 @@
+diff --git a/packages/components/table/src/table/style-helper.ts b/packages/components/table/src/table/style-helper.ts
+index bb50e89..6783f6d 100644
+--- a/packages/components/table/src/table/style-helper.ts
++++ b/packages/components/table/src/table/style-helper.ts
+@@ -269,6 +269,14 @@ function useStyle<T extends DefaultRow>(
+         headerHeight: (props.showHeader && tableHeader?.offsetHeight) || 0,
+       }
+       doLayout()
++      // FIX: 修复窗口 resize 后固定列位置错位问题
++      // 当有固定列时，需要重新同步行高并更新列样式
++      if (store.states.fixedColumns.value.length > 0 || store.states.rightFixedColumns.value.length > 0) {
++        requestAnimationFrame(() => {
++          layout.syncFixedTableRowHeight()
++          layout.updateColumnsStyle()
++        })
++      }
+     }
+   }
+   const tableSize = useFormSize()
