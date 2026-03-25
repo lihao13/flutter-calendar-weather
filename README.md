@@ -73,7 +73,7 @@ lib/
 ### 6. 测试和发布
 - [ ] 单元测试和 Widget 测试
 - [ ] 性能优化
-- [ ] 打包 APK 和 IPA（需要本地 Flutter SDK）
+- [x] 支持 Docker 一键部署到服务器
 
 ## 技术选型理由
 
@@ -85,6 +85,7 @@ lib/
 
 ## 如何运行
 
+### 本地开发
 1. 确保你已经安装了 Flutter 3.x SDK
 2. 克隆项目：
    ```bash
@@ -97,8 +98,39 @@ lib/
    ```
 4. 运行项目：
    ```bash
-   flutter run
+   flutter run -d chrome  # Web 运行
+   # 或者
+   flutter run             # 选择设备运行
    ```
+
+### Docker 部署到服务器（推荐）
+已经配置好 Docker 一键部署，只要你的服务器有 Docker 和 Docker Compose，只需要三条命令：
+
+```bash
+git clone https://github.com/lihao13/flutter-calendar-weather.git
+cd flutter-calendar-weather
+docker-compose up -d --build
+```
+
+部署完成后，访问 `http://你的服务器IP` 即可使用。
+
+## 免费服务器部署选项
+
+如果你没有服务器，这里有几个免费选项：
+
+| 平台 | 免费额度 | 是否支持 Docker |
+|------|----------|----------------|
+| **Fly.io** | 免费 3 个共享 CPU，256MB RAM，160GB 流量 | ✅ 支持 |
+| **Render** | 免费静态站点 / 750 小时每月 | ✅ 支持 |
+| **Railway** | 每月 $5 免费额度 | ✅ 支持 |
+| **Oracle Cloud Free Tier** | 永久免费 1 核 1GB | ✅ 支持 |
+
+选择任意一个，克隆代码后执行 `docker-compose up -d --build` 就完成了。
+
+## GitHub Pages 在线预览（免费）
+
+项目也配置了自动部署到 GitHub Pages：
+https://lihao13.github.io/flutter-calendar-weather/
 
 ## 配置真实 OpenWeatherMap API
 
@@ -106,10 +138,6 @@ lib/
 
 1. 在 [OpenWeatherMap](https://openweathermap.org/api) 注册并获取 API Key
 2. 修改 `lib/services/weather_service.dart`，替换为真实 API 调用
-
-## 项目截图
-
-*(运行后补充截图)*
 
 ## 许可证
 

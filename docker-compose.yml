@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  flutter-calendar-weather:
+    build: .
+    ports:
+      - "80:80"
+    restart: always
+    container_name: flutter-calendar-weather
